@@ -8,14 +8,14 @@ FPS = 30
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 GREEN = (0,255,0)
+BLUE = (30,144,255)
 # initialize pygame and create window
 pygame.init()
-pygame.mixer.init()
+
 screen = pygame.display.set_mode((WIDTH,HEIGHT))
 pygame.display.set_caption("Measurment Calculator by Jack Campbell")
 clock = pygame.time.Clock()
 
-all_sprites = pygame.sprite.Group()
 font_name=pygame.font.match_font('Arial')
 def Temprature(n,it,et):
     if it == 'f':
@@ -64,6 +64,7 @@ def Draw_Text(text,size,x,y,color):
 
 def Button(x,y,width,height,color,msg,pressed=False):
     pygame.draw.rect(screen, color,(x,y,width,height))
+    pygame.draw.rect(screen, BLUE,(x,y,width,height),1)
     Draw_Text(str(msg),18,x+width/2,y+height/4,BLACK)
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
@@ -97,14 +98,19 @@ def Keyoard_Input():
                 return '8'
             if event.key == pygame.K_9:
                 return '9'
+            if event.key == pygame.K_PERIOD:
+                return '.'
     return ''
-def Area_Screen(Show):
+def Temprature_Screen(Show):
     Draw = False
     it = ''
     et = ''
     x=''
+    Empty = True
     while Show:
         screen.fill(BLACK)
+        if x != '':
+            Empty = False
         for event in pygame.event.get():
         # check for closing window
             if event.type == pygame.QUIT:
@@ -113,29 +119,43 @@ def Area_Screen(Show):
                 if event.key == pygame.K_BACKSPACE:
                     x=x[:-1]
                     Draw_Text(x,18,200,200,WHITE)
+                if not Empty:
+                    if event.key == pygame.K_RETURN and x[-1] != '.':
+                        Draw = True
         if Button(0,HEIGHT-50,100,50,GREEN,'Back'):
             Show = False
-        if Button(100,50,100,50,GREEN,'Celsius'):
+        if Button(100,50,100,50,GREEN,'Celsius') and it!='c':
             if it == '':
                 it =  'c'
             else:
                 et = 'c'
-        if Button(250,50,100,50,GREEN,'Kalvin'):
+        if Button(250,50,100,50,GREEN,'Kalvin')and it!='k':
             if it == '':
                 it =  'k'
             else:
                 et = 'k'
-        if Button(400,50,100,50,GREEN,'Farenheit'):
+        if Button(400,50,100,50,GREEN,'Farenheit')and it!='f':
             if it == '':
                 it =  'f'
             else:
                 et = 'f'
         x += Keyoard_Input()
-        if Button(300,350,100,100,GREEN,'Convert'):
-            Draw = True
-        Draw_Text(x,18,200,200,WHITE)
+        if x.count('.') == 2:
+            x=x[:-1]
+        if Button(300,300, 50,50,GREEN,'Convert')and not Empty:
+            if x[-1] !='.':
+                Draw = True
+        Draw_Text(x+' '+ it,18,150,200,WHITE)
         if Draw:
-            Draw_Text(Temprature(int(x),it,et),18,300,200,WHITE)
+            Draw_Text(str(Temprature(float(x),it,et))+ ' '  + et,18,400,200,WHITE)
+        else:
+            Draw_Text(et,18,400,200,WHITE)
+        if Button(150,300,50,50,GREEN,'New'):
+            it = ''
+            et=''
+            Draw = False
+            Empty = True
+            x=''
         pygame.display.flip()
 # Game loop
 running = True
@@ -147,17 +167,13 @@ while running:
         # check for closing window
         if event.type == pygame.QUIT:
             running = False
-    # Update
-    all_sprites.update()
-
     # Draw/render
     screen.fill(BLACK)
-    if Button(200,25,100,50,GREEN,'Temprature'):
-        Area_Screen(True)
-    Button(200,125,100,50,GREEN,'Distance')
-    Button(200,225,100,50,GREEN,'Area')
-    Button(200,325,100,50,GREEN,'Volume')
-    all_sprites.draw(screen)
+    if Button(100,25,100,50,GREEN,'Temprature'):
+        Temprature_Screen(True)
+    Button(100,125,100,50,GREEN,'Distance')
+    Button(100,225,100,50,GREEN,'Area')
+    Button(100,325,100,50,GREEN,'Volume')
 
     # *after* drawing everything, flip the display
     pygame.display.flip()
